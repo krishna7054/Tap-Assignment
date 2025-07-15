@@ -7,7 +7,7 @@ import {Button} from "@/components/ui/button"
 import { Calendar, Clock, MapPin, Zap, Undo2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
-export default function SessionHistory() {
+function SessionHistory() {
   const [sessions, setSessions] = useState([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -201,3 +201,5 @@ export default function SessionHistory() {
     </div>
   )
 }
+
+export default React.memo(SessionHistory);

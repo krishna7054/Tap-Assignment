@@ -5,7 +5,7 @@ import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import { getToken } from './utils/auth';
 
-export default function App() {
+function App() {
   const token = getToken();
   return (
     <BrowserRouter>
@@ -17,3 +17,5 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
+export default React.memo(App);

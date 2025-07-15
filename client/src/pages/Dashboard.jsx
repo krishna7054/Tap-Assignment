@@ -16,7 +16,7 @@ function MapUpdater({ position }) {
   return null;
 }
 
-export default function Dashboard() {
+function Dashboard() {
   const [coords, setCoords] = useState([]);
   const [distance, setDistance] = useState(0);
   const [startTime, setStartTime] = useState(null);
@@ -302,5 +302,4 @@ export default function Dashboard() {
   );
 }
 
-
-
+export default React.memo(Dashboard);

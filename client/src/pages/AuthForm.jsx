@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
 
-export default function AuthForm() {
+ function AuthForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [mode, setMode] = useState("login")
   const nav = useNavigate()
@@ -93,3 +93,5 @@ export default function AuthForm() {
     </Card>
   )
 }
+
+export default React.memo(AuthForm)
