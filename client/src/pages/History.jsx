@@ -44,7 +44,7 @@ export default function SessionHistory() {
   const fetchSessions = async (pageNumber) => {
     try {
       setLoading(true)
-      const res = await axios.get(`http://localhost:5000/api/sessions?page=${pageNumber}`, {
+      const res = await axios.get(`https://tap-assignment.onrender.com/api/sessions?page=${pageNumber}`, {
         headers: authHeaders()
       })
       const data = res.data

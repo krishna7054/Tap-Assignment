@@ -164,7 +164,7 @@ export default function Dashboard() {
 
     try {
       await axios.post(
-        'http://localhost:5000/api/sessions',
+        'https://tap-assignment.onrender.com/api/sessions',
         { path: coords, distance, duration, averageSpeed: avgSpeed },
         { headers: authHeaders() }
       );
