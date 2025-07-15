@@ -98,3 +98,6 @@ npm install
 npm run dev
 ```
 ## 📸 Screenshots
+<img width="1914" height="979" alt="image" src="https://github.com/user-attachments/assets/9700bf25-6f2c-4ffb-af03-d5ee2305411d" />
+<img width="1916" height="750" alt="image" src="https://github.com/user-attachments/assets/6e670949-f962-41a3-a21c-e005d4e30095" />
+
