@@ -269,6 +269,18 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
+       <div className="grid grid-cols-2  gap-4 m-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold">{elapsed} s</div>
+              <div className="text-md text-muted-foreground">⏱ Elapsed Time</div>
+            </div>
+             <div className="text-center">
+              <div className="text-2xl font-bold">{(distance / 1000).toFixed(2)} km</div>
+              <div className="text-md text-muted-foreground">📏 Distance</div>
+            </div>
+            </div>
+            
+
       <div className="flex gap-2 justify-center m-4">
          {!isTracking ? (
               <Button onClick={start} className="flex-1 max-w-xs">
@@ -285,8 +297,7 @@ export default function Dashboard() {
     
           </div>
 
-      <p>⏱ Elapsed Time: {elapsed}s</p>
-      <p>📏 Distance: {(distance / 1000).toFixed(2)} km</p>
+      
     </div>
   );
 }

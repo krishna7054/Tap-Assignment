@@ -3,7 +3,9 @@ import axios from "axios"
 import { authHeaders } from "../utils/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, MapPin, Zap } from "lucide-react"
+import {Button} from "@/components/ui/button"
+import { Calendar, Clock, MapPin, Zap, Undo2 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export default function SessionHistory() {
   const [sessions, setSessions] = useState([])
@@ -12,6 +14,7 @@ export default function SessionHistory() {
   const [loading, setLoading] = useState(false)
   const observerRef = useRef(null)
   const loadingRef = useRef(null)
+  const nav=useNavigate();
 
   useEffect(() => {
     fetchSessions(page)
@@ -77,11 +80,17 @@ export default function SessionHistory() {
     })
   }
 
+  const history=()=>{
+    nav("/");
+  }
+
   if (sessions.length === 0 && !loading) {
     return (
+      
+        
       <Card>
         <CardHeader>
-          <CardTitle>Session History</CardTitle>
+          <CardTitle className="text-2xl">Session History</CardTitle>
           <CardDescription>Your jogging sessions will appear here</CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,6 +101,7 @@ export default function SessionHistory() {
           </div>
         </CardContent>
       </Card>
+      
     )
   }
 
@@ -100,7 +110,12 @@ export default function SessionHistory() {
     <div className="space-y-6 ">
       <Card>
         <CardHeader>
-          <CardTitle>Session History</CardTitle>
+      <Button variant="outline" className="mb-4" onClick={() => history()}>
+        <Undo2 className="w-5 h-5" />
+        Go Back
+      </Button>
+          <CardTitle className="text-2xl">Session History</CardTitle>
+          {/* <CardTitle className="text-2xl flex j">Session History</CardTitle> */}
           <CardDescription>
             {sessions.length} session{sessions.length !== 1 ? "s" : ""} completed
           </CardDescription>
