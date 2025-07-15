@@ -1,8 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+  import React, { useState, useRef, useEffect} from 'react';
 import axios from 'axios';
 import { authHeaders, clearToken } from '../utils/auth';
 import { MapContainer, TileLayer, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Button } from "@/components/ui/button"
+import { LogOut, AlertTriangle, History, Square, Play } from "lucide-react"
+import { useNavigate } from 'react-router-dom';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 
 function MapUpdater({ position }) {
   const map = useMap();
@@ -22,6 +26,9 @@ export default function Dashboard() {
   const intervalRef = useRef(null);
   const canvasRef = useRef(null);
   const [locationError, setLocationError] = useState(null);
+  const [isTracking, setIsTracking] = useState(false);
+
+  const nav=useNavigate();
 
   const calcDistance = (a, b) => {
     const R = 6371e3; // Earth's radius in meters
@@ -62,6 +69,7 @@ export default function Dashboard() {
   }, []);
 
   const start = () => {
+     setIsTracking(true); 
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
       return;
@@ -136,6 +144,7 @@ export default function Dashboard() {
   };
 
   const stop = async () => {
+    setIsTracking(false);
     if (watchRef.current) {
       navigator.geolocation.clearWatch(watchRef.current);
       watchRef.current = null;
@@ -193,24 +202,41 @@ export default function Dashboard() {
     ctx.stroke();
   };
 
+  const history =()=>{
+    nav("/history");
+  }
+
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">🏃 Jogging Tracker</h1>
-        <button
-          className="text-red-600 underline"
+    <div className="mx-auto max-w-7xl p-4">
+      <div className="flex justify-between items-center py-4">
+        <h1 className="font-bold text-gray-900 italic text-sm md:text-2xl  ">🏃 Jogging <span className='text-blue-600 font-serif'>Tracker</span></h1>
+        <div className='flex items-center gap-2 md:gap-4'>
+         <Button   variant="destructive" onClick={sos} className="bg-red-600 hover:bg-red-700 ">
+           <AlertTriangle className="w-4 h-4 " />
+          SOS
+        </Button>
+        <Button variant="outline"
+          className="text-black "
           onClick={() => {
             clearToken();
             window.location.reload();
           }}
         >
+           <LogOut className="w-4 h-4 " />
           Logout
-        </button>
+        </Button>
+        </div>
       </div>
-
-      <p>
+          <div className='flex justify-between py-2 '>
+      <div className='gap-2 inline-flex'>
         Status: <strong>{status}</strong>
-      </p>
+         <div className="w-3 h-3 mt-1.5 bg-green-500 rounded-full animate-pulse"></div>
+      </div>
+      <Button variant="secondary" onClick={()=>history()}>
+        <History  className="w-4 h-4 "/>
+        History</Button>
+</div>
+
       {locationError && (
         <p className="text-red-600">
           {locationError}
@@ -224,28 +250,46 @@ export default function Dashboard() {
         </p>
       )}
 
+       <Card >
+        <CardHeader>
+          <CardTitle>Route Map</CardTitle>
+          <CardDescription>Your jogging path will be drawn here</CardDescription>
+        </CardHeader>
+        <CardContent>
       <MapContainer center={[20, 78]} zoom={15} className="h-80 w-full z-0">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {coords.length > 1 && <Polyline positions={coords.map((p) => [p.lat, p.lng])} color="blue" />}
         {coords.length > 0 && <MapUpdater position={[coords.at(-1).lat, coords.at(-1).lng]} />}
       </MapContainer>
+      <canvas ref={canvasRef} width="400" height="100" className="border mt-3" />
+       <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span>Path</span>
+            </div>
+        </CardContent>
+      </Card>
 
-      <canvas ref={canvasRef} width="400" height="100" className="border" />
-
-      <div className="flex gap-4 mt-4">
-        <button onClick={start} className="bg-green-600 px-4 py-2 text-white rounded">
-          Start
-        </button>
-        <button onClick={stop} className="bg-yellow-600 px-4 py-2 text-white rounded">
-          Stop
-        </button>
-        <button onClick={sos} className="bg-red-600 px-4 py-2 text-white rounded">
-          SOS
-        </button>
-      </div>
+      <div className="flex gap-2 justify-center m-4">
+         {!isTracking ? (
+              <Button onClick={start} className="flex-1 max-w-xs">
+                <Play className="w-4 h-4 mr-2" />
+                Start Session
+              </Button>
+              
+              ) : (
+                <Button onClick={stop} variant="destructive" className="flex-1 max-w-xs">
+                  <Square className="w-4 h-4 mr-2" />
+                  Stop
+                </Button>
+              )}
+    
+          </div>
 
       <p>⏱ Elapsed Time: {elapsed}s</p>
       <p>📏 Distance: {(distance / 1000).toFixed(2)} km</p>
     </div>
   );
 }
+
+
+
