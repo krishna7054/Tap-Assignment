@@ -8,7 +8,7 @@ export default function Signup() {
   const nav = useNavigate();
   const submit = async (e) => {
     e.preventDefault();
-    await axios.post('/api/auth/signup', { email, password });
+    await axios.post('http://localhost:5000/api/auth/signup', { email, password });
     nav('/login');
   };
   return (
