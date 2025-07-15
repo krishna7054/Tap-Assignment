@@ -16,7 +16,6 @@ export default function AuthForm() {
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [name, setName] = useState("")
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -76,10 +75,6 @@ export default function AuthForm() {
 
           <TabsContent value="signup">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input name="name" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input name="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />

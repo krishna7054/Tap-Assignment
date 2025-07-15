@@ -90,6 +90,10 @@ export default function SessionHistory() {
         
       <Card>
         <CardHeader>
+           <Button variant="outline" className="mb-4" onClick={() => history()}>
+        <Undo2 className="w-5 h-5" />
+        Go Back
+      </Button>
           <CardTitle className="text-2xl">Session History</CardTitle>
           <CardDescription>Your jogging sessions will appear here</CardDescription>
         </CardHeader>
