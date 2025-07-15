@@ -1,72 +1,184 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import { authHeaders } from '../utils/auth';
+import { useState, useEffect, useRef, useCallback } from "react"
+import axios from "axios"
+import { authHeaders } from "../utils/auth"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Clock, MapPin, Zap } from "lucide-react"
 
-export default function History() {
-  const [sessions, setSessions] = useState([]);
-  const loader = useRef(null);
-  const page = useRef(1);
-
-  const fetchSessions = () => {
-    axios
-      .get(`http://localhost:5000/api/sessions?page=${page.current}`, { headers: authHeaders() })
-      .then((res) => {
-        if (Array.isArray(res.data)) {
-          setSessions((s) => [...s, ...res.data]);
-          page.current++;
-        }
-      })
-      .catch((err) => console.error('Error fetching sessions:', err));
-  };
+export default function SessionHistory() {
+  const [sessions, setSessions] = useState([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const observerRef = useRef(null)
+  const loadingRef = useRef(null)
 
   useEffect(() => {
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetchSessions();
+    fetchSessions(page)
+  }, [page])
+
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect()
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage(p => p + 1)
         }
       },
-      { threshold: 1 }
-    );
+      { threshold: 1.0 }
+    )
 
-    const currentLoader = loader.current;
-    if (currentLoader) obs.observe(currentLoader);
+    if (loadingRef.current) {
+      observerRef.current.observe(loadingRef.current)
+    }
 
     return () => {
-      if (currentLoader) obs.unobserve(currentLoader);
-    };
-  }, []);
+      if (observerRef.current) observerRef.current.disconnect()
+    }
+  }, [hasMore, loading])
+
+  const fetchSessions = async (pageNumber) => {
+    try {
+      setLoading(true)
+      const res = await axios.get(`http://localhost:5000/api/sessions?page=${pageNumber}`, {
+        headers: authHeaders()
+      })
+      const data = res.data
+
+      if (Array.isArray(data)) {
+        setSessions(prev => [...prev, ...data])
+        if (data.length === 0) setHasMore(false)
+      } else {
+        setHasMore(false)
+      }
+    } catch (err) {
+      console.error("Failed to load sessions:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}m ${secs}s`
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
+  if (sessions.length === 0 && !loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Session History</CardTitle>
+          <CardDescription>Your jogging sessions will appear here</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No sessions yet</h3>
+            <p className="text-muted-foreground">Start your first jogging session to see it here!</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
-    <div className="p-4 space-y-3">
-      <h2 className="text-2xl font-bold mb-4">🏃 Past Jogging Sessions</h2>
+    <div className="mx-auto max-w-7xl p-4">
+    <div className="space-y-6 ">
+      <Card>
+        <CardHeader>
+          <CardTitle>Session History</CardTitle>
+          <CardDescription>
+            {sessions.length} session{sessions.length !== 1 ? "s" : ""} completed
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
-      {sessions.length === 0 && (
-        <p className="text-gray-500">No sessions yet.</p>
-      )}
+      <div className="space-y-4">
+        {sessions.map((s, i) => (
+          <Card key={s._id || i} className="transition-all duration-200 hover:shadow-md">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="font-semibold text-lg">Session #{sessions.length - i}</h3>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {formatDate(s.date)}
+                  </p>
+                </div>
+                <Badge variant="secondary">Completed</Badge>
+              </div>
 
-      {sessions.map((s, i) => {
-        const formattedDate = s.date ? new Date(s.date).toLocaleString() : 'Unknown Date';
-        const distance = typeof s.distance === 'number' ? (s.distance / 1000).toFixed(2) : '0.00';
-        const duration = s.duration ?? 0;
-        const speed = (s.averageSpeed ?? 0).toFixed(2);
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <div className="font-semibold">{formatTime(s.duration)}</div>
+                    <div className="text-xs text-muted-foreground">Duration</div>
+                  </div>
+                </div>
 
-        return (
-          <div
-            key={s._id || i}
-            className="p-4 bg-white shadow-md rounded border space-y-1"
-          >
-            <p><strong>Date:</strong> {formattedDate}</p>
-            <p><strong>Distance:</strong> {distance} km</p>
-            <p><strong>Duration:</strong> {duration} seconds</p>
-            <p><strong>Avg Speed:</strong> {speed} m/s</p>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <div className="font-semibold">{(s.distance / 1000).toFixed(2)} km</div>
+                    <div className="text-xs text-muted-foreground">Distance</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <div className="font-semibold">{s.averageSpeed?.toFixed(1)} m/s</div>
+                    <div className="text-xs text-muted-foreground">Avg Speed</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <div>
+                    <div className="font-semibold">{s.path?.length || 0}</div>
+                    <div className="text-xs text-muted-foreground">GPS Points</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Pace: {s.duration > 0 ? (s.duration / 60 / (s.distance / 1000)).toFixed(2) : "0.00"} min/km
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        {hasMore && (
+          <div ref={loadingRef} className="flex justify-center py-4 text-muted-foreground">
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+                Loading more sessions...
+              </div>
+            ) : (
+              <span>Scroll down to load more</span>
+            )}
           </div>
-        );
-      })}
-
-      <div ref={loader} className="text-center text-gray-400 mt-4">
-        Loading more...
+        )}
       </div>
     </div>
-  );
+    </div>
+  )
 }
